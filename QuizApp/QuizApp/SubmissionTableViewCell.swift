@@ -12,7 +12,7 @@ class SubmissionTableViewCell: UITableViewCell {
     @IBOutlet var marks:UILabel!
     @IBOutlet var timestamp:UILabel!
     @IBOutlet var number:UILabel!
-    @IBOutlet var details:UITextView!
+    @IBOutlet var details:UIWebView!
     
     override func awakeFromNib() {
         super.awakeFromNib()

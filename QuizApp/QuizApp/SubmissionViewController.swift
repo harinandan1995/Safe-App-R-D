@@ -16,7 +16,7 @@ class SubmissionViewController: UIViewController, UITableViewDelegate, UITableVi
     var uniqueID:String?
     @IBOutlet var subTableView:UITableView!
     @IBOutlet var quizIDLabel:UILabel!
-    
+    let baseUrl = NSURL(string: NSBundle.mainBundle().pathForResource("assets", ofType: nil)!)
     
     @IBAction func backTapped(sender :AnyObject) {
         self.dismissViewControllerAnimated(true, completion: {});
@@ -46,12 +46,11 @@ class SubmissionViewController: UIViewController, UITableViewDelegate, UITableVi
         cell.timestamp.text = submissionDetails.time_stamp
         if(tap == indexPath.row) {
             cell.details.hidden = false
-            //debugPrint(self.quizID)
-            //debugPrint(self.uniqueID)
-            debugPrint(submissionDetails.sub_id)
-            cell.details.text = submissionDetails.summary
+            cell.details.loadHTMLString(submissionDetails.summary!, baseURL: self.baseUrl)
         }
-        else {cell.details.hidden = true}
+        else {
+            cell.details.hidden = true
+        }
         return cell
     }
     
@@ -78,11 +77,11 @@ class SubmissionViewController: UIViewController, UITableViewDelegate, UITableVi
                         if let responseDic = response.result.value as? [String: AnyObject]{
                             debugPrint(responseDic)
                             if(String(responseDic["error"]!) == "1") {
-                                submissionDetails.summary = String(responseDic["message"])
+                                submissionDetails.summary = GlobalFN().convertToHtml(String(responseDic["message"]))
                             }
                             else{
                                 submissionDetails.downloaded = 1
-                                submissionDetails.summary = String(responseDic["responses"])
+                                submissionDetails.summary = GlobalFN().getSummary(responseDic)
                             }
                         }
                     }

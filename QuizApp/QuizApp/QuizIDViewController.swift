@@ -20,6 +20,10 @@ class QuizIDViewController: UIViewController {
     var username : String!
     var unicodes : [String]!
     
+    @IBAction func backTapped(sender :AnyObject) {
+        self.dismissViewControllerAnimated(true, completion: {});
+    }
+    
     @IBAction func prevSubmissionsTapped(sender : AnyObject) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewControllerWithIdentifier("PrevSubViewController") as! PrevSubViewController

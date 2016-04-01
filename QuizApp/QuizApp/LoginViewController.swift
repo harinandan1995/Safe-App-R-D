@@ -40,14 +40,8 @@ class LoginViewController: UIViewController {
             Alamofire.request(.POST, GlobalFN().address+"/ldap-auth", headers: headers, parameters: parameters, encoding: .JSON).responseJSON { response in
                 if(response.result.error == nil){
                     if let responseDic = response.result.value as? [String: AnyObject]{
-                        //debugPrint(responseDic["message"])
-                        //debugPrint(responseDic["student_id"])
-                        //debugPrint(responseDic["student_name"])
-                        if(String(responseDic["error"]!) == "1") {
-                            JLToast.makeText(String(responseDic["message"]!), duration: JLToastDelay.ShortDelay).show()
-                            SwiftSpinner.hide()
-                        }
-                        else{
+                        debugPrint(responseDic)
+                        if(String(responseDic["error"]!) != "1") {
                             if(self.savepasswordtag == 1) {
                                 GlobalFN().passsword = self.passwordTextField.text!
                             }
@@ -59,9 +53,9 @@ class LoginViewController: UIViewController {
                             vc.user_id = responseDic["student_id"] as? String
                             vc.username = responseDic["student_name"] as? String
                             self.presentViewController(vc, animated: false, completion: nil)
-                            SwiftSpinner.hide()
                         }
-                        
+                        JLToast.makeText(String(responseDic["message"]!), duration: JLToastDelay.ShortDelay).show()
+                        SwiftSpinner.hide()
                     }
                 }
                 else {

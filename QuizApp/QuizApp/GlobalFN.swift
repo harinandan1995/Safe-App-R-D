@@ -10,6 +10,7 @@ import Foundation
 import Alamofire
 
 public class GlobalFN {
+    let basePath = NSBundle.mainBundle().pathForResource("assets", ofType: nil)!
     
     var address: String {
         get {
@@ -53,42 +54,56 @@ public class GlobalFN {
         }
     }
     
-    func getSummary(quizID: String, submissionID:String, uniqueID:String) -> String {
-        /*debugPrint(quizID)
-        debugPrint(submissionID)
-        debugPrint(uniqueID)*/
-        var output:String?
-        output = "Error"
-        let headers = [
-            "Content-Type": "application/x-www-form-urlencoded"
-        ]
-        let parameters : [String : AnyObject] = [
-            "quiz_id" : quizID,
-            "uniq_id" : uniqueID,
-            "key" : 123,
-            "submission_id" : submissionID
-        ]
-        Alamofire.request(.POST, GlobalFN().address+"/quiz/summary", headers: headers, parameters: parameters, encoding: .JSON).responseJSON { response in
-            if(response.result.error == nil){
-                if let responseDic = response.result.value as? [String: AnyObject]{
-                    debugPrint(responseDic)
-                    if(String(responseDic["error"]!) == "1") {
-                        output = String(responseDic["message"])
-                    }
-                    else{
-                        output = String(responseDic)
-                    }
-                }
+    func convertToHtml( question1:String) -> String{
+        let question = question1.stringByReplacingOccurrencesOfString("\\n", withString: " ", options: NSStringCompareOptions.LiteralSearch, range: nil)
+        var htmlString : String
+        let cssPath = self.basePath + "/css/jqmath-0.4.3.css"
+        let jsPath1 = self.basePath + "/js/jquery-1.4.3.min.js"
+        let jsPath2 = self.basePath + "/js/jqmath-etc-0.4.3.min.js"
+        htmlString = "<html><head>"
+            + "<link rel='stylesheet' href='"
+            + cssPath
+            + "'>"
+            + "<script src='"
+            + jsPath1
+            + "'></script>"
+            + "<script src='"
+            + jsPath2
+            + "'></script>"
+            + "</head><body>"
+            + question
+            + "</body></html>"
+        return htmlString
+    }
+    
+    func getSummary(responseDic : [String: AnyObject]) -> String {
+        var output = ""
+        let showMarksTag = responseDic["show_marks"] as! Int
+        let showAnswersTag = responseDic["show_answers"] as! Int
+        var responses = responseDic["responses"] as! [[String : AnyObject]]
+        for i in 0..<responses.count {
+            output = output + String(i+1) + ": " + String(responses[i]["question"]!) + "<br>"
+            output = output + "Given answer: " + String(responses[i]["given_answer"]!) + "<br>"
+            if(showAnswersTag == 1) {
+                output = output + "Correct answer: " + String(responses[i]["correct_answer"]!) + "<br>"
             }
-            else {
-                //debugPrint(response.result.error)
-                output = "ERROR"
+            if(showMarksTag == 1) {
+                output = output + "Marks obtained: " + String(responses[i]["marks_obtained"]!) + "<br>"
             }
-            
+            output = output + "Result: " + String(responses[i]["result"]!) + "<br>"
+            let options = responses[i]["options"] as! [[String : AnyObject]]
+            if (options.count > 0) {
+                output = output + "Options: <br>"
+            }
+            for j in 0..<options.count {
+                output = output + String(j+1) + ": " + String(options[j]["text"]!) + "<br>"
+            }
+            output = output + "<br>"
         }
-
-        
-        return output!
+        //debugPrint(output)
+        output = convertToHtml(output)
+        //debugPrint(output)
+        return output
     }
     
 }

@@ -17,7 +17,6 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     var duration : Int!
     var timer = NSTimer()
     let questionsList = QuestionList()
-    let basePath = NSBundle.mainBundle().pathForResource("assets", ofType: nil)!
     let baseUrl = NSURL(string: NSBundle.mainBundle().pathForResource("assets", ofType: nil)!)
     var currentQuestion = Question()
     
@@ -62,27 +61,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         duration = duration-1
     }
     
-    func convertToHtml(var question:String) -> String{
-        question = question.stringByReplacingOccurrencesOfString("\\n", withString: " ", options: NSStringCompareOptions.LiteralSearch, range: nil)
-        var htmlString : String
-        let cssPath = self.basePath + "/css/jqmath-0.4.3.css"
-        let jsPath1 = self.basePath + "/js/jquery-1.4.3.min.js"
-        let jsPath2 = self.basePath + "/js/jqmath-etc-0.4.3.min.js"
-        htmlString = "<html><head>"
-            + "<link rel='stylesheet' href='"
-            + cssPath
-            + "'>"
-            + "<script src='"
-            + jsPath1
-            + "'></script>"
-            + "<script src='"
-            + jsPath2
-            + "'></script>"
-            + "</head><body>"
-            + question
-            + "</body></html>"
-        return htmlString
-    }
+    
     
     func getImage(quesNo : String, questionIndex : Int) {
         let headers = [
@@ -181,7 +160,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                         }
                         self.currentQuestion = self.questionsList.nextQuestion()!
                         self.questionIDTextView.text = self.currentQuestion.questionNo
-                        self.questionWebView.loadHTMLString(self.convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
+                        self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
                         if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
                             self.answerTextfield.hidden = false
                             self.optionsTableView.hidden = true
@@ -215,7 +194,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     @IBAction func prevButtonTapped(sender : AnyObject) {
         self.currentQuestion = self.questionsList.prevQuestion()!
         self.questionIDTextView.text = self.currentQuestion.questionNo
-        self.questionWebView.loadHTMLString(self.convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
+        self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
         if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
             self.answerTextfield.hidden = false
             self.optionsTableView.hidden = true
@@ -248,7 +227,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         
         self.currentQuestion = self.questionsList.nextQuestion()!
         self.questionIDTextView.text = self.currentQuestion.questionNo
-        self.questionWebView.loadHTMLString(self.convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
+        self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
         if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
             self.answerTextfield.hidden = false
             self.optionsTableView.hidden = true
@@ -342,7 +321,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         cell.contentView.addSubview(cell.optionWebView)
         cell.optionWebView.tag = indexPath.row
         cell.optionWebView.delegate = self
-        cell.optionWebView.loadHTMLString(self.convertToHtml(option.optionText!), baseURL: self.baseUrl)
+        cell.optionWebView.loadHTMLString(GlobalFN().convertToHtml(option.optionText!), baseURL: self.baseUrl)
         cell.selectionStyle = UITableViewCellSelectionStyle.None
         
         if currentQuestion.answer.contains(currentQuestion.options[indexPath.row].optionID!){
@@ -416,7 +395,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                 currentQuestion = self.questionsList.questions[j]
                 self.questionsList.currentQuestion = j
                 self.questionIDTextView.text = self.currentQuestion.questionNo
-                self.questionWebView.loadHTMLString(self.convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
+                self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
                 if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
                     self.answerTextfield.hidden = false
                     self.optionsTableView.hidden = true
@@ -479,20 +458,17 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                 "quiz_id" : self.quiz_id,
                 "key" : 123,
                 "submit_time" : "100",
-                "submission" : "asd"
+                "submission" : submission
 
             ]
             Alamofire.request(.POST, GlobalFN().address+"/quiz/submit", headers: headers, parameters: parameters, encoding: .JSON).responseJSON { response in
                 if(response.result.error == nil){
                     if let responseDic = response.result.value as? [String: AnyObject]{
                         debugPrint(responseDic)
-                        if(String(responseDic["error"]) == "1") {
-                            JLToast.makeText(String(responseDic["message"]!), duration: JLToastDelay.ShortDelay).show()
-                            SwiftSpinner.hide()
-                        }
-                        else{
+                        debugPrint(String(responseDic["error"]))
+                        if(String(responseDic["error"]!) != "1") {
                             debugPrint(String(responseDic["show_result"]))
-                            if(String(responseDic["show_result"]) == "1"){
+                            if(String(responseDic["show_result"]!) == "1"){
                                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
                                 let vc = storyboard.instantiateViewControllerWithIdentifier("SummaryViewController") as! SummaryViewController
                                 vc.quiz_id = self.quiz_id
@@ -503,14 +479,14 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                                 let submitalert = UIAlertController(title: "Hurray!", message: "Quiz has been succesfully submitted", preferredStyle: UIAlertControllerStyle.Alert)
                                 submitalert.view.tintColor = UIColor.blackColor()
                                 submitalert.addAction(UIAlertAction(title: "Exit", style: UIAlertActionStyle.Destructive, handler: { action in
-                                    
+                                    exit(0)
                                 }
                                 ))
                                 self.presentViewController(submitalert, animated: true, completion: nil)
                             }
-                            
-                            SwiftSpinner.hide()
                         }
+                        JLToast.makeText(String(responseDic["message"]!), duration: JLToastDelay.ShortDelay).show()
+                        SwiftSpinner.hide()
                     }
                 }
                 else {
