@@ -383,6 +383,10 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         let fittingSize = webView.sizeThatFits(CGSizeZero)
         frame.size = fittingSize
         
+        if(currentQuestion.options.count <= webView.tag) {
+            webView.stopLoading()
+            return
+        }
         webView.frame = CGRectMake(52, 5, frame.size.width, frame.size.height)
         if (currentQuestion.options[webView.tag].height != 0.0){
             return

@@ -106,4 +106,8 @@ public class GlobalFN {
         return output
     }
     
+    func addLog(log : String){
+        
+    }
+    
 }
