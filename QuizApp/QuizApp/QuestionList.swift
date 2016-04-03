@@ -31,6 +31,43 @@ public class QuestionList{
     
     init() {}
     
+    func shuffleArray<T>(var array: Array<T>) -> Array<T>
+    {
+        for var index = array.count - 1; index > 0; index -= 1
+        {
+            // Random int from 0 to index-1
+            let j = Int(arc4random_uniform(UInt32(index-1)))
+            
+            // Swap two array elements
+            // Notice '&' required as swap uses 'inout' parameters
+            swap(&array[index], &array[j])
+        }
+        return array
+    }
+    
+    func shuffleUp(){
+        if(shuffleQues == 1) {
+            debugPrint("Shuffling questions")
+            questions = shuffleArray(questions)
+        }
+        for i in 0..<questions.count {
+            if(shuffleQues == 1) {
+                questions[i].qNo = String(i+1)
+            }
+            else {
+                questions[i].qNo = questions[i].questionNo
+            }
+        }
+        if(shuffleOptions == 1){
+            debugPrint("Shuffling options")
+            for i in 0..<questions.count {
+                let temp = shuffleArray(questions[i].options)
+                questions[i].options.removeAll()
+                questions[i].options = temp
+            }
+        }
+    }
+    
     func nextQuestion() -> Question? {
         currentQuestion += 1
         if currentQuestion >= questions.count {

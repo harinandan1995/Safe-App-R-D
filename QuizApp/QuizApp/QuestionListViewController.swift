@@ -37,7 +37,7 @@ class QuestionListViewController: UIViewController {
         else{
             ques = self.unattemptedList[indexPath.row]
         }
-        cell.textLabel?.text =  ques.questionNo! + ":  " + ques.question!
+        cell.textLabel?.text =  ques.qNo! + ":  " + ques.question!
         
         return cell
     }

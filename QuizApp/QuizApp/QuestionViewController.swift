@@ -126,10 +126,8 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                             question.question = tempDic["question"] as? String
                             question.questionNo = tempDic["question_no"] as? String
                             question.questionType = tempDic["type"] as? Int
-                         
-                            if(question.hasImage == 1) {
-                                self.getImage(question.questionNo!, questionIndex: j)
-                            }
+                            
+                           
                             
                             if(question.questionType == 1 || question.questionType == 2){
                                 var optionsDic = tempDic["options"] as? [[String : AnyObject]]
@@ -145,6 +143,13 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                             }
                             self.questionsList.questions.append(question)
                         }
+                        self.questionsList.shuffleUp()
+                        for k in 0..<self.questionsList.questions.count {
+                            let question = self.questionsList.questions[k]
+                            if(question.hasImage == 1) {
+                                self.getImage(question.questionNo!, questionIndex: k)
+                            }
+                        }
                         self.duration = self.questionsList.duration
                         self.timer = NSTimer.scheduledTimerWithTimeInterval(1, target: self, selector: #selector(QuestionViewController.updateTime), userInfo: nil, repeats: true)
                         
@@ -159,7 +164,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                             self.prevButtonImage.hidden = true
                         }
                         self.currentQuestion = self.questionsList.nextQuestion()!
-                        self.questionIDTextView.text = self.currentQuestion.questionNo
+                        self.questionIDTextView.text = "Question " + self.currentQuestion.qNo!
                         self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
                         if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
                             self.answerTextfield.hidden = false
@@ -193,7 +198,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     
     @IBAction func prevButtonTapped(sender : AnyObject) {
         self.currentQuestion = self.questionsList.prevQuestion()!
-        self.questionIDTextView.text = self.currentQuestion.questionNo
+        self.questionIDTextView.text = "Question " + self.currentQuestion.qNo!
         self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
         if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
             self.answerTextfield.hidden = false
@@ -226,7 +231,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     @IBAction func nextButtonTapped(sender : AnyObject) {
         
         self.currentQuestion = self.questionsList.nextQuestion()!
-        self.questionIDTextView.text = self.currentQuestion.questionNo
+        self.questionIDTextView.text = "Question " + self.currentQuestion.qNo!
         self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
         if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
             self.answerTextfield.hidden = false
@@ -394,7 +399,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
             if(self.questionsList.questions[j].questionID == id){
                 currentQuestion = self.questionsList.questions[j]
                 self.questionsList.currentQuestion = j
-                self.questionIDTextView.text = self.currentQuestion.questionNo
+                self.questionIDTextView.text = "Question " + self.currentQuestion.qNo!
                 self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
                 if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
                     self.answerTextfield.hidden = false

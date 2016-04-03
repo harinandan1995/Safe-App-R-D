@@ -11,6 +11,7 @@ import Foundation
 public class Question {
     var questionID : Int?
     var questionNo : String?
+    var qNo : String?
     var questionType : Int?
     var answer = [String]()
     var question : String?
@@ -30,6 +31,4 @@ public class Question {
     
     init() {
     }
-    
-    
 }
