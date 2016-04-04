@@ -8,6 +8,9 @@
 
 import Foundation
 import Alamofire
+import SwiftSpinner
+import JLToast
+
 
 public class GlobalFN {
     let basePath = NSBundle.mainBundle().pathForResource("assets", ofType: nil)!
@@ -106,8 +109,84 @@ public class GlobalFN {
         return output
     }
     
-    func addLog(log : String){
+    func getWiFiAddress() -> String? {
+        var address : String?
         
+        // Get list of all interfaces on the local machine:
+        var ifaddr : UnsafeMutablePointer<ifaddrs> = nil
+        if getifaddrs(&ifaddr) == 0 {
+            
+            // For each interface ...
+            for (var ptr = ifaddr; ptr != nil; ptr = ptr.memory.ifa_next) {
+                let interface = ptr.memory
+                
+                // Check for IPv4 or IPv6 interface:
+                let addrFamily = interface.ifa_addr.memory.sa_family
+                if addrFamily == UInt8(AF_INET) || addrFamily == UInt8(AF_INET6) {
+                    
+                    // Check interface name:
+                    if let name = String.fromCString(interface.ifa_name) where name == "en0" {
+                        
+                        // Convert interface address to a human readable string:
+                        var addr = interface.ifa_addr.memory
+                        var hostname = [CChar](count: Int(NI_MAXHOST), repeatedValue: 0)
+                        getnameinfo(&addr, socklen_t(interface.ifa_addr.memory.sa_len),
+                                    &hostname, socklen_t(hostname.count),
+                                    nil, socklen_t(0), NI_NUMERICHOST)
+                        address = String.fromCString(hostname)
+                    }
+                }
+            }
+            freeifaddrs(ifaddr)
+        }
+        
+        return address
+    }
+
+    
+    func addLog(log : String,quizID : String, uniqID: String,log_level:Int){
+        let now = NSDate()
+        let formatter = NSDateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        formatter.timeZone = NSTimeZone(forSecondsFromGMT: 0)
+        
+        var message = [String : AnyObject]()
+        message["msg"] = log
+        message["log_level"] = log_level
+        message["time"] = formatter.stringFromDate(now)
+        
+        var unicodeString :String!
+        unicodeString = ""
+        do {
+            let jsonData = try NSJSONSerialization.dataWithJSONObject(message, options: NSJSONWritingOptions.PrettyPrinted)
+            unicodeString = String(data: jsonData, encoding: NSUTF8StringEncoding)
+        } catch let error as NSError {
+            print(error)
+        }
+        
+        let headers = [
+            "Content-Type": "text/html"
+        ]
+        let parameters : [String : AnyObject] = [
+            "uniq_id" : uniqID,
+            "quiz_id" : quizID,
+            "key" : 123,
+            "message" : unicodeString
+        ]
+        Alamofire.request(.POST, GlobalFN().address+"/add-log", headers: headers, parameters: parameters, encoding: .JSON).response { request, response, data, error in
+            //debugPrint(response)
+            //debugPrint(error)
+            //debugPrint(request)
+        
+            if(error == nil){
+                
+            }
+            else {
+                JLToast.makeText("Please check your internet connection", duration: JLToastDelay.ShortDelay).show()
+            }
+            
+        }
+
     }
     
 }

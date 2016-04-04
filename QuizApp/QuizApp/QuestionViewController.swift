@@ -10,6 +10,10 @@ import UIKit
 import SwiftSpinner
 import JLToast
 import Alamofire
+import SystemConfiguration.CaptiveNetwork
+import Foundation
+import CoreBluetooth
+import CoreTelephony
 
 class QuestionViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIWebViewDelegate {
     var uniq_id : String!
@@ -19,6 +23,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     let questionsList = QuestionList()
     let baseUrl = NSURL(string: NSBundle.mainBundle().pathForResource("assets", ofType: nil)!)
     var currentQuestion = Question()
+    var callCenter = CTCallCenter()
     
     @IBOutlet var questionWebView : UIWebView! //Question text view
     @IBOutlet var optionsTableView : UITableView! //Question text view
@@ -51,6 +56,11 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     }
     
     func updateTime(){
+        if(duration == 0){
+            self.autoSubmit()
+            duration = -1
+            return
+        }
         if(duration<=30) {
             timerLabel.textColor = UIColor.redColor()
         }
@@ -61,7 +71,87 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         duration = duration-1
     }
     
+    func autoSubmit(){
+        SwiftSpinner.show("Auto submitting quiz")
+        var submission = [[String:AnyObject]]()
+        for i in 0 ..< self.questionsList.questions.count  {
+            let temp_question = self.questionsList.questions[i]
+            var temp = [String : AnyObject]()
+            temp["question_id"] = temp_question.questionID
+            temp["response"] = temp_question.answer
+            submission.append(temp)
+        }
+        let headers = [
+            "Content-Type": "application/x-www-form-urlencoded"
+        ]
+        let parameters : [String : AnyObject] = [
+            "uniq_id" : self.uniq_id,
+            "quiz_id" : self.quiz_id,
+            "key" : 123,
+            "submit_time" : "100",
+            "submission" : submission
+            
+        ]
+        Alamofire.request(.POST, GlobalFN().address+"/quiz/submit", headers: headers, parameters: parameters, encoding: .JSON).responseJSON { response in
+            if(response.result.error == nil){
+                if let responseDic = response.result.value as? [String: AnyObject]{
+                    debugPrint(responseDic)
+                    debugPrint(String(responseDic["error"]))
+                    if(String(responseDic["error"]!) != "1") {
+                        NSNotificationCenter.defaultCenter().removeObserver(self)
+                        if(String(responseDic["show_result"]!) == "1"){
+                            let storyboard = UIStoryboard(name: "Main", bundle: nil)
+                            let vc = storyboard.instantiateViewControllerWithIdentifier("SummaryViewController") as! SummaryViewController
+                            vc.quiz_id = self.quiz_id
+                            vc.uniq_id = self.uniq_id
+                            self.presentViewController(vc, animated: false, completion: nil)
+                        }
+                        else{
+                            let submitalert = UIAlertController(title: "Hurray!", message: "Quiz has been succesfully submitted", preferredStyle: UIAlertControllerStyle.Alert)
+                            submitalert.view.tintColor = UIColor.blackColor()
+                            submitalert.addAction(UIAlertAction(title: "Exit", style: UIAlertActionStyle.Destructive, handler: { action in
+                                exit(0)
+                                }
+                                ))
+                            self.presentViewController(submitalert, animated: true, completion: nil)
+                        }
+                    }
+                    JLToast.makeText(String(responseDic["message"]!), duration: JLToastDelay.ShortDelay).show()
+                    SwiftSpinner.hide()
+                }
+            }
+            else {
+                //debugPrint(response.result.error)
+                self.autoSubmit()
+                JLToast.makeText("Please check your internet connection", duration: JLToastDelay.ShortDelay).show()
+                SwiftSpinner.hide()
+            }
+        }
+
+    }
     
+    func addLog(){
+        var currentSSID = ""
+        if let interfaces:CFArray! = CNCopySupportedInterfaces() {
+            for i in 0..<CFArrayGetCount(interfaces){
+                let interfaceName: UnsafePointer<Void> = CFArrayGetValueAtIndex(interfaces, i)
+                let rec = unsafeBitCast(interfaceName, AnyObject.self)
+                let unsafeInterfaceData = CNCopyCurrentNetworkInfo("\(rec)")
+                if unsafeInterfaceData != nil {
+                    let interfaceData = unsafeInterfaceData! as Dictionary!
+                    currentSSID = interfaceData["SSID"] as! String
+                }
+            }
+        }
+        let UDID = UIDevice.currentDevice().identifierForVendor!.UUIDString
+        let ipAddress = GlobalFN().getWiFiAddress()
+        var log = "WifiSSID : " + currentSSID
+        log = log + " UDID : " + UDID
+        log = log + " IPAddress : " + ipAddress!
+        debugPrint(log)
+        GlobalFN().addLog(log, quizID: self.quiz_id, uniqID: self.uniq_id, log_level: 1)
+    }
+
     
     func getImage(quesNo : String, questionIndex : Int) {
         let headers = [
@@ -102,7 +192,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
             //debugPrint(response)
             if(response.result.error == nil){
                 if let responseDic = response.result.value as? [String: AnyObject]{
-                    debugPrint(responseDic)
+                    //debugPrint(responseDic)
                     if(String(responseDic["error"]!) == "1") {
                         JLToast.makeText(String(responseDic["message"]!), duration: JLToastDelay.ShortDelay).show()
                         self.dismissViewControllerAnimated(true, completion: {});
@@ -446,6 +536,11 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         
     }
     
+    @objc func backgroundNotificationReceived(notification: NSNotification){
+        debugPrint("Background received")
+        GlobalFN().addLog("User went background", quizID: self.quiz_id, uniqID: self.uniq_id, log_level: 1)
+    }
+    
     @IBAction func submitButtonTapped(sender : AnyObject) {
         let alert = UIAlertController(title: "Alert", message: "Are you sure you want to submit?", preferredStyle: UIAlertControllerStyle.Alert)
         alert.view.tintColor = UIColor.blackColor()
@@ -476,7 +571,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                         debugPrint(responseDic)
                         debugPrint(String(responseDic["error"]))
                         if(String(responseDic["error"]!) != "1") {
-                            debugPrint(String(responseDic["show_result"]))
+                            NSNotificationCenter.defaultCenter().removeObserver(self)
                             if(String(responseDic["show_result"]!) == "1"){
                                 let storyboard = UIStoryboard(name: "Main", bundle: nil)
                                 let vc = storyboard.instantiateViewControllerWithIdentifier("SummaryViewController") as! SummaryViewController
@@ -512,13 +607,44 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         self.presentViewController(alert, animated: true, completion: nil)
     }
     
+    func phoneCallDetected(state : String){
+        GlobalFN().addLog("Phone call detected state "+state, quizID: self.quiz_id, uniqID: self.uniq_id, log_level: 1)
+    }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         getQuestions()
+        addLog()
+        callCenter.callEventHandler = { (call:CTCall!) in
+            
+            switch call.callState {
+            case CTCallStateConnected:
+                print("CTCallStateConnected")
+                self.phoneCallDetected("Call connected")
+            case CTCallStateDisconnected:
+                print("CTCallStateDisconnected")
+                self.phoneCallDetected("Call disconnected")
+            case CTCallStateIncoming:
+                print("CTCallStateIncoming")
+                self.phoneCallDetected("Incoming call")
+            case CTCallStateDialing:
+                print("CTCallStateDailing")
+                self.phoneCallDetected("Dailing call")
+            default:
+                //Not concerned with CTCallStateDialing or CTCallStateIncoming
+                break
+            }
+        }
+        
         NSNotificationCenter.defaultCenter().addObserver(
             self,
             selector: #selector(QuestionViewController.questionListTapped(_:)),
             name: "questionListNotification",
+            object: nil)
+        NSNotificationCenter.defaultCenter().addObserver(
+            self,
+            selector: #selector(QuestionViewController.backgroundNotificationReceived(_:)),
+            name: "backgroundNotification",
             object: nil)
         // Do any additional setup after loading the view.
     }
@@ -543,6 +669,23 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     }
     */
 
+}
+
+extension UIApplication {
+    class func topViewController(base: UIViewController? = UIApplication.sharedApplication().keyWindow?.rootViewController) -> UIViewController? {
+        if let nav = base as? UINavigationController {
+            return topViewController(nav.visibleViewController)
+        }
+        if let tab = base as? UITabBarController {
+            if let selected = tab.selectedViewController {
+                return topViewController(selected)
+            }
+        }
+        if let presented = base?.presentedViewController {
+            return topViewController(presented)
+        }
+        return base
+    }
 }
 
 extension UIImageView {

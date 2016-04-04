@@ -100,6 +100,7 @@
 		01C124121C6A5D5B005311DB /* SummaryViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SummaryViewController.swift; sourceTree = "<group>"; };
 		01C124151C6A606E005311DB /* OptionTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OptionTableViewCell.swift; sourceTree = "<group>"; };
 		01C124161C6A606E005311DB /* OptionTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = OptionTableViewCell.xib; sourceTree = "<group>"; };
+		01C77A491CB161E300C04915 /* QuizApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "QuizApp-Bridging-Header.h"; sourceTree = "<group>"; };
 		01DA78931C95F4A500EFEC9D /* Previous-96.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Previous-96.png"; sourceTree = "<group>"; };
 		01DA78951C95FA3000EFEC9D /* arkenstone-symbol-font-v1.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "arkenstone-symbol-font-v1.ttf"; sourceTree = "<group>"; };
 		01DA78981C9F24C200EFEC9D /* Numerical Sorting-96.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Numerical Sorting-96.png"; sourceTree = "<group>"; };
@@ -160,6 +161,7 @@
 		0197BD2B1C5E505B0073EA09 /* QuizApp */ = {
 			isa = PBXGroup;
 			children = (
+				01C77A491CB161E300C04915 /* QuizApp-Bridging-Header.h */,
 				01C123F61C5F2CB6005311DB /* Help Classes */,
 				01AA87831C5E9078006EA40C /* Icons */,
 				01C124141C6A604A005311DB /* Cells */,
@@ -344,6 +346,11 @@
 					0197BD281C5E505B0073EA09 = {
 						CreatedOnToolsVersion = 6.3.2;
 						DevelopmentTeam = 34FM99VE32;
+						SystemCapabilities = {
+							com.apple.BackgroundModes = {
+								enabled = 1;
+							};
+						};
 					};
 					0197BD3D1C5E505C0073EA09 = {
 						CreatedOnToolsVersion = 6.3.2;
@@ -620,6 +627,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "IITBombay.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "QuizApp/QuizApp-Bridging-Header.h";
 			};
 			name = Debug;
 		};
@@ -635,6 +643,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "IITBombay.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "QuizApp/QuizApp-Bridging-Header.h";
 			};
 			name = Release;
 		};
