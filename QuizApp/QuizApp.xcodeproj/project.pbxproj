@@ -19,6 +19,7 @@
 		01825D351C95C198002D6DB9 /* SubmissionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01825D341C95C198002D6DB9 /* SubmissionViewController.swift */; };
 		01825D381C95C1FB002D6DB9 /* SubmissionTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01825D361C95C1FB002D6DB9 /* SubmissionTableViewCell.swift */; };
 		01825D391C95C1FB002D6DB9 /* SubmissionTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 01825D371C95C1FB002D6DB9 /* SubmissionTableViewCell.xib */; };
+		01918DA01CDA797200026CA5 /* Camera-96.png in Resources */ = {isa = PBXBuildFile; fileRef = 01918D9F1CDA797200026CA5 /* Camera-96.png */; };
 		0197BD2F1C5E505B0073EA09 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0197BD2E1C5E505B0073EA09 /* AppDelegate.swift */; };
 		0197BD341C5E505B0073EA09 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0197BD321C5E505B0073EA09 /* Main.storyboard */; };
 		0197BD361C5E505B0073EA09 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0197BD351C5E505B0073EA09 /* Images.xcassets */; };
@@ -77,6 +78,7 @@
 		01825D341C95C198002D6DB9 /* SubmissionViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubmissionViewController.swift; sourceTree = "<group>"; };
 		01825D361C95C1FB002D6DB9 /* SubmissionTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SubmissionTableViewCell.swift; sourceTree = "<group>"; };
 		01825D371C95C1FB002D6DB9 /* SubmissionTableViewCell.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SubmissionTableViewCell.xib; sourceTree = "<group>"; };
+		01918D9F1CDA797200026CA5 /* Camera-96.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Camera-96.png"; sourceTree = "<group>"; };
 		0197BD291C5E505B0073EA09 /* QuizApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QuizApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0197BD2D1C5E505B0073EA09 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		0197BD2E1C5E505B0073EA09 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -204,11 +206,11 @@
 			isa = PBXGroup;
 			children = (
 				01AA87811C5E8EF2006EA40C /* LoginViewController.swift */,
-				01C124031C6A44E0005311DB /* QuizIDViewController.swift */,
 				01C124051C6A549E005311DB /* PasscodeViewController.swift */,
 				01C124101C6A5D4E005311DB /* QuestionViewController.swift */,
 				01C124121C6A5D5B005311DB /* SummaryViewController.swift */,
 				01825D2C1C957BD3002D6DB9 /* PrevSubViewController.swift */,
+				01C124031C6A44E0005311DB /* QuizIDViewController.swift */,
 				01825D341C95C198002D6DB9 /* SubmissionViewController.swift */,
 				01DA78AF1CA87CAB00EFEC9D /* QuestionListViewController.swift */,
 			);
@@ -218,6 +220,7 @@
 		01AA87831C5E9078006EA40C /* Icons */ = {
 			isa = PBXGroup;
 			children = (
+				01918D9F1CDA797200026CA5 /* Camera-96.png */,
 				01DA78AD1CA73F9300EFEC9D /* Picture-96.png */,
 				01DA78A91CA08EE100EFEC9D /* List-96.png */,
 				01DA78A71C9F69A400EFEC9D /* Timer-96.png */,
@@ -403,6 +406,7 @@
 				01DA78961C95FA3000EFEC9D /* arkenstone-symbol-font-v1.ttf in Resources */,
 				01C124181C6A606E005311DB /* OptionTableViewCell.xib in Resources */,
 				01DA78A01C9F25BD00EFEC9D /* Right-96.png in Resources */,
+				01918DA01CDA797200026CA5 /* Camera-96.png in Resources */,
 				01DA78AE1CA73F9300EFEC9D /* Picture-96.png in Resources */,
 				0197BD361C5E505B0073EA09 /* Images.xcassets in Resources */,
 				01825D391C95C1FB002D6DB9 /* SubmissionTableViewCell.xib in Resources */,

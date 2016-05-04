@@ -14,8 +14,9 @@ import SystemConfiguration.CaptiveNetwork
 import Foundation
 import CoreBluetooth
 import CoreTelephony
+import MobileCoreServices
 
-class QuestionViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIWebViewDelegate {
+class QuestionViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UIWebViewDelegate, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     var uniq_id : String!
     var quiz_id : String!
     var duration : Int!
@@ -24,6 +25,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     let baseUrl = NSURL(string: NSBundle.mainBundle().pathForResource("assets", ofType: nil)!)
     var currentQuestion = Question()
     var callCenter = CTCallCenter()
+    var imagePicker = UIImagePickerController()
     
     @IBOutlet var questionWebView : UIWebView! //Question text view
     @IBOutlet var optionsTableView : UITableView! //Question text view
@@ -38,7 +40,10 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     @IBOutlet var answerTextfield : UITextField! //Textfield for integer float type answers
     @IBOutlet var questionImage : UIImageView!
     @IBOutlet var questionImageButton : UIButton!
-    
+    @IBOutlet var reasonButton : UIButton!
+    @IBOutlet var imageAnswerButton : UIButton!
+    @IBOutlet var imageAnswerImage : UIImageView!
+    @IBOutlet var imageAnswer : UIImageView!
     
     func convertTime(seconds:Int) -> String{
         let output : String!
@@ -79,6 +84,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
             var temp = [String : AnyObject]()
             temp["question_id"] = temp_question.questionID
             temp["response"] = temp_question.answer
+            temp["reason"] = temp_question.reason_text
             submission.append(temp)
         }
         let headers = [
@@ -88,7 +94,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
             "uniq_id" : self.uniq_id,
             "quiz_id" : self.quiz_id,
             "key" : 123,
-            "submit_time" : "100",
+            "submit_time" : self.questionsList.duration!-self.duration,
             "submission" : submission
             
         ]
@@ -178,6 +184,62 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
+    func setQuestion(){
+        if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
+            
+            self.optionsTableView.hidden = true
+            if(self.currentQuestion.questionType == 6 && self.currentQuestion.require_img_capture == 1){
+                self.answerTextfield.hidden = true
+                self.imageAnswerImage.hidden = false
+                self.imageAnswerButton.enabled = true
+                self.imageAnswer.hidden = false
+                if(self.currentQuestion.imageAnswer != nil){
+                    debugPrint(self.currentQuestion.question)
+                    self.imageAnswer.contentMode = .ScaleAspectFit
+                    self.imageAnswer.image = UIImage(data:self.currentQuestion.imageAnswer!,scale:1.0)
+                }
+                else{
+                    self.imageAnswer.image = nil;
+                }
+            }else{
+                self.answerTextfield.hidden = false
+                self.imageAnswerImage.hidden = true
+                self.imageAnswerButton.enabled = false
+                self.imageAnswer.hidden = true
+                self.answerTextfield.text = currentQuestion.answer[0]
+                if(self.currentQuestion.questionType == 3) {
+                    self.answerTextfield.keyboardType = UIKeyboardType.NumberPad
+                }
+                else if(self.currentQuestion.questionType == 4) {
+                    self.answerTextfield.keyboardType = UIKeyboardType.DecimalPad
+                }
+                else if(self.currentQuestion.questionType >= 5 ) {
+                    self.answerTextfield.keyboardType = UIKeyboardType.Default
+                }
+            }
+        }
+        else{
+            self.answerTextfield.hidden = true
+            self.optionsTableView.hidden = false
+        }
+        if(self.currentQuestion.hasImage == 1){
+            self.questionImage.hidden = false
+            self.questionImageButton.enabled = true
+        }
+        else {
+            self.questionImage.hidden = true
+            self.questionImageButton.enabled = false
+        }
+        if(self.currentQuestion.reason_text_len > 0){
+            self.reasonButton.hidden = false
+            self.reasonButton.enabled = true
+        }
+        else {
+            self.reasonButton.hidden = true
+            self.reasonButton.enabled = false
+        }
+    }
+    
     func getQuestions(){
         SwiftSpinner.show("Downloading quiz")
         let headers = [
@@ -192,7 +254,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
             //debugPrint(response)
             if(response.result.error == nil){
                 if let responseDic = response.result.value as? [String: AnyObject]{
-                    //debugPrint(responseDic)
+                    debugPrint(responseDic)
                     if(String(responseDic["error"]!) == "1") {
                         JLToast.makeText(String(responseDic["message"]!), duration: JLToastDelay.ShortDelay).show()
                         self.dismissViewControllerAnimated(true, completion: {});
@@ -203,7 +265,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                         self.questionsList.duration = responseDic["quiz_duration"] as? Int
                         self.questionsList.shuffleOptions = responseDic["randomize_options"] as? Int
                         self.questionsList.shuffleQues = responseDic["randomize_questions"] as? Int
-
+                        
                         JLToast.makeText(String(responseDic["quiz_description"]!), duration: JLToastDelay.ShortDelay).show()
                         
                         var questionsDic = responseDic["questions"] as? [[String : AnyObject]]
@@ -216,8 +278,8 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                             question.question = tempDic["question"] as? String
                             question.questionNo = tempDic["question_no"] as? String
                             question.questionType = tempDic["type"] as? Int
-                            
-                           
+                            question.reason_text_len = (tempDic["reason_text_len"] as! NSString).integerValue
+                            question.require_img_capture = (tempDic["require_img_capture"] as! NSString).integerValue
                             
                             if(question.questionType == 1 || question.questionType == 2){
                                 var optionsDic = tempDic["options"] as? [[String : AnyObject]]
@@ -256,23 +318,8 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                         self.currentQuestion = self.questionsList.nextQuestion()!
                         self.questionIDTextView.text = "Question " + self.currentQuestion.qNo!
                         self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
-                        if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
-                            self.answerTextfield.hidden = false
-                            self.optionsTableView.hidden = true
-                        }
-                        else{
-                            self.answerTextfield.hidden = true
-                            self.optionsTableView.hidden = false
-                        }
-                        if(self.currentQuestion.hasImage == 1){
-                            self.questionImage.hidden = false
-                            self.questionImageButton.enabled = true
-                        }
-                        else {
-                            self.questionImage.hidden = true
-                            self.questionImageButton.enabled = false
-                        }
-
+                        self.setQuestion()
+                        
                         self.optionsTableView.reloadData()
                         SwiftSpinner.hide()
                     }
@@ -285,29 +332,14 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
             }
         }
     }
+    ///////////////////////////////////////////////////////////////////////////
+    //Prev and next button actions
     
     @IBAction func prevButtonTapped(sender : AnyObject) {
         self.currentQuestion = self.questionsList.prevQuestion()!
         self.questionIDTextView.text = "Question " + self.currentQuestion.qNo!
         self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
-        if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
-            self.answerTextfield.hidden = false
-            self.optionsTableView.hidden = true
-            self.answerTextfield.text = currentQuestion.answer[0]
-        }
-        else{
-            self.answerTextfield.hidden = true
-            self.optionsTableView.hidden = false
-        }
-        if(self.currentQuestion.hasImage == 1){
-            self.questionImage.hidden = false
-            self.questionImageButton.enabled = true
-        }
-        else {
-            self.questionImage.hidden = true
-            self.questionImageButton.enabled = false
-        }
-
+        self.setQuestion()
         self.optionsTableView.reloadData()
         self.nextButton.enabled = true
         self.nextButtonImage.hidden = false
@@ -323,24 +355,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         self.currentQuestion = self.questionsList.nextQuestion()!
         self.questionIDTextView.text = "Question " + self.currentQuestion.qNo!
         self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
-        if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
-            self.answerTextfield.hidden = false
-            self.optionsTableView.hidden = true
-            self.answerTextfield.text = currentQuestion.answer[0]
-        }
-        else{
-            self.answerTextfield.hidden = true
-            self.optionsTableView.hidden = false
-        }
-        if(self.currentQuestion.hasImage == 1){
-            self.questionImage.hidden = false
-            self.questionImageButton.enabled = true
-        }
-        else {
-            self.questionImage.hidden = true
-            self.questionImageButton.enabled = false
-        }
-
+        self.setQuestion()
         self.optionsTableView.reloadData()
         self.prevButton.enabled = true
         self.prevButtonImage.hidden = false
@@ -351,10 +366,15 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         //debugPrint(questionsList.currentQuestion)
     }
     
+    ///////////////////////////////////////////////////////////////////////////
+    
     @IBAction func answerEdited(sender : UITextField) {
         currentQuestion.answer.removeAll()
         currentQuestion.answer.append(sender.text!)
     }
+    
+    ///////////////////////////////////////////////////////////////////////////
+    //To load the image in question
     
     @IBAction func imageTapped(sender: UITapGestureRecognizer) {
         if(currentQuestion.hasImage == 1){
@@ -371,13 +391,15 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         else{
             JLToast.makeText("No image present for this question", duration: JLToastDelay.ShortDelay).show()
         }
-        
     }
     
     func dismissFullscreenImage(sender: UITapGestureRecognizer) {
         sender.view?.removeFromSuperview()
     }
     
+    ///////////////////////////////////////////////////////////////////////////
+    
+    //Answer clear button
     @IBAction func clearButtonTapped(sender : AnyObject) {
         currentQuestion.answer.removeAll()
         if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
@@ -389,6 +411,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         }
     }
     
+    //Questions list view
     @IBAction func listButtonTapped(sender : AnyObject) {
         let storyboard = UIStoryboard(name: "Main", bundle: nil)
         let vc = storyboard.instantiateViewControllerWithIdentifier("QuestionListViewController") as! QuestionListViewController
@@ -397,6 +420,8 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
 
     }
     
+    ///////////////////////////////////////////////////////////////////////////
+    //Options tableview
     
     func tableView(tableview : UITableView, numberOfRowsInSection section: Int) -> Int {
         return currentQuestion.options.count
@@ -445,7 +470,6 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         debugPrint(indexPath.row)*/
         return cell
     }
-
     
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         debugPrint(indexPath.row)
@@ -474,7 +498,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         frame.size = fittingSize
         
         if(currentQuestion.options.count <= webView.tag) {
-            webView.stopLoading()
+            //webView.stopLoading()
             return
         }
         webView.frame = CGRectMake(52, 5, frame.size.width, frame.size.height)
@@ -482,10 +506,13 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
             return
         }
         
-        currentQuestion.options[webView.tag].height = Float(webView.scrollView.contentSize.height)
+        currentQuestion.options[webView.tag].height = Float(frame.size.height)
         optionsTableView.reloadRowsAtIndexPaths([NSIndexPath(forRow: webView.tag, inSection: 0)], withRowAnimation: .Automatic)
     }
     
+    ///////////////////////////////////////////////////////////////////////////
+    
+    //Action when a question is tapped in the questions list view
     @objc func questionListTapped(notification: NSNotification){
         let userInfo : [String:AnyObject!] = notification.userInfo as! [String:AnyObject!]
         let id = userInfo["questionID"] as! Int
@@ -495,24 +522,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                 self.questionsList.currentQuestion = j
                 self.questionIDTextView.text = "Question " + self.currentQuestion.qNo!
                 self.questionWebView.loadHTMLString(GlobalFN().convertToHtml(self.currentQuestion.question!), baseURL: self.baseUrl)
-                if(self.currentQuestion.questionType != 1 && self.currentQuestion.questionType != 2) {
-                    self.answerTextfield.hidden = false
-                    self.optionsTableView.hidden = true
-                    self.answerTextfield.text = currentQuestion.answer[0]
-                }
-                else{
-                    self.answerTextfield.hidden = true
-                    self.optionsTableView.hidden = false
-                }
-                if(self.currentQuestion.hasImage == 1){
-                    self.questionImage.hidden = false
-                    self.questionImageButton.enabled = true
-                }
-                else {
-                    self.questionImage.hidden = true
-                    self.questionImageButton.enabled = false
-                }
-
+                self.setQuestion()
                 self.optionsTableView.reloadData()
                 if(questionsList.currentQuestion == questionsList.questions.count-1){
                     self.nextButton.enabled = false
@@ -533,14 +543,66 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                 return
             }
         }
+    }
+    
+    //Action when camera button is tapped
+    @IBAction func cameraTapped(sender : AnyObject) {
+        debugPrint("camera")
+        imagePicker =  UIImagePickerController()
+        imagePicker.delegate = self
+        imagePicker.sourceType = .Camera
+        presentViewController(imagePicker, animated: true, completion: nil)
+    
+    }
+    func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
+        picker.dismissViewControllerAnimated(true, completion: nil)
+        self.currentQuestion.imageAnswer = UIImagePNGRepresentation(image)
+        self.imageAnswer.contentMode = .ScaleAspectFit
+        self.imageAnswer.image = UIImage(data:self.currentQuestion.imageAnswer!,scale:1.0);
+    }
+    
+    //Reason button is tapped
+    @IBAction func reasonTapped(sender : AnyObject) {
+        let alertController = UIAlertController(title: "Reason", message: "Please mention the reason behind your answer here. Max length is " + String(self.currentQuestion.reason_text_len) , preferredStyle: .Alert)
+        
+        let confirmAction = UIAlertAction(title: "Save", style: .Default) { (_) in
+            if let field = alertController.textFields![0] as? UITextField {
+                // store your data
+                if(field.text?.characters.count > self.currentQuestion.reason_text_len) {
+                    JLToast.makeText("Length exceeded the limit of " + String(self.currentQuestion.reason_text_len) + "characters.", duration: JLToastDelay.ShortDelay).show()
+                }
+                else{
+                    self.currentQuestion.reason_text = field.text
+                }
+                self.view.resignFirstResponder()
+            } else {
+                // user did not fill field
+            }
+        }
+        
+        let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel) { (_) in
+            self.view.resignFirstResponder()
+        }
+        
+        alertController.addTextFieldWithConfigurationHandler { (textField) in
+            textField.placeholder = "Write your reason here"
+            textField.text = self.currentQuestion.reason_text
+        }
+        
+        alertController.addAction(confirmAction)
+        alertController.addAction(cancelAction)
+        
+        self.presentViewController(alertController, animated: true, completion: nil)
         
     }
     
+    //Notification received when app goes background
     @objc func backgroundNotificationReceived(notification: NSNotification){
         debugPrint("Background received")
         GlobalFN().addLog("User went background", quizID: self.quiz_id, uniqID: self.uniq_id, log_level: 1)
     }
     
+    //Action when submit button is pressed
     @IBAction func submitButtonTapped(sender : AnyObject) {
         let alert = UIAlertController(title: "Alert", message: "Are you sure you want to submit?", preferredStyle: UIAlertControllerStyle.Alert)
         alert.view.tintColor = UIColor.blackColor()
@@ -552,6 +614,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                 var temp = [String : AnyObject]()
                 temp["question_id"] = temp_question.questionID
                 temp["response"] = temp_question.answer
+                temp["reason"] = temp_question.reason_text
                 submission.append(temp)
             }
             let headers = [
@@ -561,7 +624,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                 "uniq_id" : self.uniq_id,
                 "quiz_id" : self.quiz_id,
                 "key" : 123,
-                "submit_time" : "100",
+                "submit_time" : self.questionsList.duration!-self.duration,
                 "submission" : submission
 
             ]
@@ -607,14 +670,15 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
         self.presentViewController(alert, animated: true, completion: nil)
     }
     
+    //Function called when phone call is detected
     func phoneCallDetected(state : String){
-        GlobalFN().addLog("Phone call detected state "+state, quizID: self.quiz_id, uniqID: self.uniq_id, log_level: 1)
+        GlobalFN().addLog("Phone call detected state "+state, quizID: self.quiz_id, uniqID: self.uniq_id, log_level: 3)
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         getQuestions()
-        addLog()
+        //addLog()
         callCenter.callEventHandler = { (call:CTCall!) in
             
             switch call.callState {

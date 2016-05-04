@@ -202,7 +202,7 @@
                             <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Upload to Cloud-96.png" translatesAutoresizingMaskIntoConstraints="NO" id="dFU-ae-aXS">
                                 <rect key="frame" x="172" y="527" width="25" height="25"/>
                             </imageView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="00:00:00" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xq6-cL-hFP">
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="-- : -- : --" textAlignment="right" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Xq6-cL-hFP">
                                 <rect key="frame" x="221" y="527" width="87" height="25"/>
                                 <fontDescription key="fontDescription" type="boldSystem" pointSize="17"/>
                                 <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -218,8 +218,29 @@
                                     <action selector="imageTapped:" destination="lAt-CP-YEu" eventType="touchUpInside" id="FkG-QL-t93"/>
                                 </connections>
                             </button>
-                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Picture-96.png" translatesAutoresizingMaskIntoConstraints="NO" id="Evk-d3-8Hk">
+                            <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Picture-96.png" translatesAutoresizingMaskIntoConstraints="NO" id="Evk-d3-8Hk">
                                 <rect key="frame" x="283" y="243" width="25" height="25"/>
+                            </imageView>
+                            <button hidden="YES" opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="50A-RN-BZK">
+                                <rect key="frame" x="13" y="241" width="67" height="30"/>
+                                <state key="normal" title="Reason">
+                                    <color key="titleColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                </state>
+                                <connections>
+                                    <action selector="reasonTapped:" destination="lAt-CP-YEu" eventType="touchUpInside" id="CIo-SM-hHS"/>
+                                </connections>
+                            </button>
+                            <button opaque="NO" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Zga-Hp-EB0">
+                                <rect key="frame" x="104" y="254" width="111" height="71"/>
+                                <connections>
+                                    <action selector="cameraTapped:" destination="lAt-CP-YEu" eventType="touchUpInside" id="Q6A-kv-jUH"/>
+                                </connections>
+                            </button>
+                            <imageView hidden="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="Camera-96.png" translatesAutoresizingMaskIntoConstraints="NO" id="QY2-jb-Pb0">
+                                <rect key="frame" x="138" y="267" width="45" height="40"/>
+                            </imageView>
+                            <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="6L9-kh-evc">
+                                <rect key="frame" x="13" y="310" width="295" height="201"/>
                             </imageView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
@@ -228,6 +249,9 @@
                     <connections>
                         <outlet property="answerTextfield" destination="796-0u-dIc" id="Yk0-hG-Ryn"/>
                         <outlet property="clearButton" destination="oQN-yi-bgf" id="wRL-ez-IfJ"/>
+                        <outlet property="imageAnswer" destination="6L9-kh-evc" id="7f0-4O-7TF"/>
+                        <outlet property="imageAnswerButton" destination="Zga-Hp-EB0" id="zMj-MR-hCF"/>
+                        <outlet property="imageAnswerImage" destination="QY2-jb-Pb0" id="VyE-H1-wjL"/>
                         <outlet property="nextButton" destination="XYV-Sk-lX2" id="DyE-SG-Rcr"/>
                         <outlet property="nextButtonImage" destination="kXN-uT-1uc" id="Kbx-PU-phe"/>
                         <outlet property="optionsTableView" destination="mhV-ZK-5sy" id="GdM-cy-J8r"/>
@@ -237,6 +261,7 @@
                         <outlet property="questionImage" destination="Evk-d3-8Hk" id="wId-jh-tXK"/>
                         <outlet property="questionImageButton" destination="lrX-xK-Bdh" id="9Ap-0s-Wqi"/>
                         <outlet property="questionWebView" destination="JUa-JB-tLg" id="An1-bf-2AM"/>
+                        <outlet property="reasonButton" destination="50A-RN-BZK" id="ha6-7X-1F4"/>
                         <outlet property="submitButton" destination="9zy-u9-f9w" id="7NW-ph-0ml"/>
                         <outlet property="timerLabel" destination="Xq6-cL-hFP" id="oqI-8i-PoF"/>
                     </connections>
@@ -383,7 +408,7 @@
                         <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="TEST101:222" borderStyle="roundedRect" placeholder="Quiz ID" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="2E4-Zw-fbN">
+                            <textField opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" fixedFrame="YES" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="QIP007:267" borderStyle="roundedRect" placeholder="Quiz ID" textAlignment="center" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="2E4-Zw-fbN">
                                 <rect key="frame" x="41" y="282" width="239" height="30"/>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
@@ -844,6 +869,7 @@
     </scenes>
     <resources>
         <image name="Broom-96.png" width="96" height="96"/>
+        <image name="Camera-96.png" width="96" height="96"/>
         <image name="Checked Checkbox 2-96.png" width="96" height="96"/>
         <image name="Circled Left 2-96.png" width="96" height="96"/>
         <image name="Left-96.png" width="96" height="96"/>

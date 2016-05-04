@@ -88,11 +88,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "QuizApp/QuestionViewController.swift"
-            timestampString = "481451240.342424"
+            timestampString = "484083406.930114"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "453"
-            endingLineNumber = "453"
+            startingLineNumber = "477"
+            endingLineNumber = "477"
             landmarkName = "tableView(_:didSelectRowAtIndexPath:)"
             landmarkType = "5">
          </BreakpointContent>
@@ -120,11 +120,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "QuizApp/QuestionViewController.swift"
-            timestampString = "481451240.342424"
+            timestampString = "484086290.997543"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "553"
-            endingLineNumber = "553"
+            startingLineNumber = "615"
+            endingLineNumber = "615"
             landmarkName = "submitButtonTapped(_:)"
             landmarkType = "5">
          </BreakpointContent>
