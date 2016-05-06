@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import UIKit
 
 public class Question {
     var questionID : Int?
@@ -22,7 +23,7 @@ public class Question {
     var reason_text_len : Int
     var require_img_capture : Int?
     var reason_text : String?
-    var imageAnswer : NSData?
+    var imageAnswer : UIImage?
     init (questionID1:Int, questionNo1:String, questionType1:Int, question1:String, marks1:String, hasImage1:Int,options1:[Option]){
         questionID = questionID1
         questionNo = questionNo1

@@ -196,7 +196,7 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
                 if(self.currentQuestion.imageAnswer != nil){
                     debugPrint(self.currentQuestion.question)
                     self.imageAnswer.contentMode = .ScaleAspectFit
-                    self.imageAnswer.image = UIImage(data:self.currentQuestion.imageAnswer!,scale:1.0)
+                    self.imageAnswer.image = self.currentQuestion.imageAnswer!
                 }
                 else{
                     self.imageAnswer.image = nil;
@@ -556,9 +556,9 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
     }
     func imagePickerController(picker: UIImagePickerController, didFinishPickingImage image: UIImage, editingInfo: [String : AnyObject]?) {
         picker.dismissViewControllerAnimated(true, completion: nil)
-        self.currentQuestion.imageAnswer = UIImagePNGRepresentation(image)
+        self.currentQuestion.imageAnswer = image
         self.imageAnswer.contentMode = .ScaleAspectFit
-        self.imageAnswer.image = UIImage(data:self.currentQuestion.imageAnswer!,scale:1.0);
+        self.imageAnswer.image = self.currentQuestion.imageAnswer!
     }
     
     //Reason button is tapped
@@ -611,6 +611,12 @@ class QuestionViewController: UIViewController, UITableViewDelegate, UITableView
             var submission = [[String:AnyObject]]()
             for i in 0 ..< self.questionsList.questions.count  {
                 let temp_question = self.questionsList.questions[i]
+                if(temp_question.require_img_capture == 1) {
+                    if(temp_question.imageAnswer != nil){
+                        debugPrint("uploading image")
+                        GlobalFN().uploadImage(self.quiz_id, uniqID: self.uniq_id, quesID: temp_question.questionID!, img: temp_question.imageAnswer!)
+                    }
+                }
                 var temp = [String : AnyObject]()
                 temp["question_id"] = temp_question.questionID
                 temp["response"] = temp_question.answer

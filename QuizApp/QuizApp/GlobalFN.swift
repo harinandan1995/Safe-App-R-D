@@ -184,9 +184,51 @@ public class GlobalFN {
             else {
                 JLToast.makeText("Please check your internet connection", duration: JLToastDelay.ShortDelay).show()
             }
-            
         }
-
+    }
+    
+    func uploadImage(quizID:String, uniqID:String, quesID:Int, img :UIImage){
+        /*debugPrint("uploading Image")
+        debugPrint(quizID)
+        debugPrint(uniqID)
+        debugPrint(quesID)*/
+        let imageData = UIImageJPEGRepresentation(img,0.2)
+        
+        //let base64String = imageData!.base64EncodedStringWithOptions(.Encoding64CharacterLineLength)
+        
+        let headers = [
+            "Content-Type": "application/x-www-form-urlencoded"
+        ]
+        let parameters : [String : AnyObject] = [
+            "image" : "something.png",
+            "uniq_id" : uniqID,
+            "quiz_id" : quizID,
+            "key" : "123",
+            "question_id" : String(quesID)
+        ]
+        
+        Alamofire.upload(.POST, GlobalFN().address+"/quiz/upload-image", headers: headers,multipartFormData: {
+            multipartFormData in
+            
+            multipartFormData.appendBodyPart(data: imageData!, name: "image", fileName: uniqID, mimeType: "image/png")
+            //multipartFormData.appendBodyPart(data: data, name: "image", fileName: "file.png", mimeType: "image/png")
+            
+            for (key, value) in parameters {
+                debugPrint(key)
+                debugPrint(value)
+                multipartFormData.appendBodyPart(data: value.dataUsingEncoding(NSUTF8StringEncoding)!, name: key)
+            }
+            
+            },encodingCompletion: { encodingResult in
+                switch encodingResult {
+                case .Success(let upload, _, _):
+                    upload.responseJSON { response in
+                        debugPrint(response.result.value)
+                    }
+                case .Failure(let encodingError):
+                    print(encodingError)
+                }
+        })
     }
     
 }

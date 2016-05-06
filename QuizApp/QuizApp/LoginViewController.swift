@@ -34,7 +34,7 @@ class LoginViewController: UIViewController {
             let parameters : [String : AnyObject] = [
                 "ldap_id" : self.ldapTextField.text!,
                 "ldap_password" : self.passwordTextField.text!,
-                "key" : 123,
+                "key" : "123",
                 "version" : "1.6"
             ]
             Alamofire.request(.POST, GlobalFN().address+"/ldap-auth", headers: headers, parameters: parameters, encoding: .JSON).responseJSON { response in
